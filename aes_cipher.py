@@ -33,15 +33,24 @@ class AESCipher:
         if padding_type == cls.zero_padding:
             return data
 
+    def hex2bytes(self, raw):
+        if type(raw) == str:
+            raw = bytes.fromhex(raw)
+        return raw
+
     def encrypt(self, raw):
         raw = AESCipher.padding(raw, self.PKCS5Padding).encode("utf-8")
-        return self.aes.encrypt(raw)
+        return self.aes.encrypt(raw).hex().upper()
 
     def decrypt(self, enc):
-        return self.unpadding(self.aes.decrypt(enc), self.PKCS5Padding).decode('utf8')
+        enc = self.hex2bytes(enc)
+        raw = self.unpadding(self.aes.decrypt(enc), self.PKCS5Padding).decode('utf8')
+        raw = raw.strip()
+        return raw
 
 
 key = '1234567890123456'
+key = key.encode('utf-8')
 aes = AESCipher(key)
 for line in sys.stdin:
     line = line.strip()
@@ -49,9 +58,7 @@ for line in sys.stdin:
         continue
     enc = aes.encrypt(line)
     print(enc)
-    print("\n")
     raw = aes.decrypt(enc)
     print(raw)
-    print("\n")
 
 
